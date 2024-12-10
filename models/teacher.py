@@ -1,16 +1,6 @@
 from extensions import db
 from uuid import uuid4
-from enum import Enum
-
-class Subjects(Enum):
-    maths = "matematyka"
-    physics = "fizyka"
-    chemistry = "chemia"
-    history = "historia"
-    wos = "WoS"
-    biology = "biologia"
-    geography = "geografia"
-
+from sqlalchemy.orm import validates
 
 class Teacher(db.Model):
     __tablename__ = "teachers"
@@ -19,9 +9,14 @@ class Teacher(db.Model):
     surname = db.Column(db.String(60), nullable=False)
     email = db.Column(db.String(120), unique=True)
     description = db.Column(db.String(300))
-    subjects = db.Column(db.Enum(Subjects), nullable=False)
-    rate = db.Column(db.Integer)
+    subjects = db.relationship("Subject")
+    rate = db.Column(db.Float)
     phone = db.Column(db.String(15))
     price = db.Column(db.Integer)
     currency = db.Column(db.String(3))
 
+    @validates("rate")
+    def validate_rate(self, _, value):
+        if value < 0.0 or value > 5.0:
+            raise ValueError("Rate is not in range <0,5>")
+        return value
